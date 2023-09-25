@@ -73,8 +73,10 @@ cropButton.addEventListener('click', () => {
         const scaleY = canvasElement.height / canvasElement.offsetHeight;
         const x = (rect.left - canvasElement.offsetLeft) * scaleX;
         const y = (rect.top - canvasElement.offsetTop) * scaleY;
-        if (x >= cropBoxData.left && x <= cropBoxData.left + cropBoxData.width && y >= cropBoxData.top && y <= cropBoxData.top + cropBoxData.height) {
-          labelPositions.push({x, y, text: label.textContent, fontSize: label.style.fontSize, fontFamily: getComputedStyle(label).fontFamily, color: label.style.color});
+        if (x >= cropBoxData.left && x <= cropBoxData.left + cropBoxData.width && y >= cropBoxData.top && y <=
+                                                                        cropBoxData.top + cropBoxData.height) {
+          labelPositions.push({x, y, text: label.textContent, fontSize: label.style.fontSize, fontFamily:
+                                getComputedStyle(label).fontFamily, color: label.style.color});
         }
       });
 
@@ -257,10 +259,6 @@ label.addEventListener('dblclick', () => {
 });
 
 
-
-
-
-// Add the settings to a div with class right-panel
 const rightPanelDiv=document.querySelector('.right-panel')
 rightPanelDiv.innerHTML='';
 rightPanelDiv.appendChild(label);
@@ -349,17 +347,14 @@ const buttons = ['-', 'АБ', 'аб', 'Аб'].map((text, index) => {
         label.textContent = label.textContent.toLowerCase();
         break;
       case 'Аб':
-        label.textContent = label.textContent.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+        label.textContent = label.textContent.split(' ').map(word => word.charAt(0).toUpperCase() +
+                            word.slice(1).toLowerCase()).join(' ');
         break;
     }
   });
 
   return button;
 });
-
-
-
-
 
 rightPanelDiv.appendChild(fontSizeInput);
 rightPanelDiv.appendChild(fontStyleSelect);
@@ -834,11 +829,13 @@ filterButton.addEventListener('click', () => {
         return;
     }
 
+    // Сохраните исходное изображение
     if (!originalImage) {
         originalImage = new Image();
         originalImage.src = canvas.toDataURL();
     }
 
+    // Очистите правую панель и добавьте настройки фильтра
     rightPanel.innerHTML = '';
     const filterSettings = document.createElement('div');
     filterSettings.innerHTML = `
@@ -849,33 +846,36 @@ filterButton.addEventListener('click', () => {
       <div class="line"></div>
       <div class="filter-settings">
           <div class="slider-container">
-              <span class="slider-label">Насыщенность</span>
+              <label for="saturation" style="position: absolute; top: -20px;">Насыщенность</label>
               <input type="range" min="0" max="2" value="1" step="0.1" id="saturation">
+              <span class="value" id="saturationValue">1</span>
           </div>
           <div class="slider-container">
-              <span class="slider-label">Контрастность</span>
+              <label for="contrast" style="position: absolute; top: -20px;">Контрастность</label>
               <input type="range" min="0" max="2" value="1" step="0.1" id="contrast">
+              <span class="value" id="contrastValue">1</span>
           </div>
           <div class="slider-container">
-              <span class="slider-label">Яркость</span>
+              <label for="brightness" style="position: absolute; top: -20px;">Яркость</label>
               <input type="range" min="0" max="2" value="1" step="0.1" id="brightness">
+              <span class="value" id="brightnessValue">1</span>
           </div>
           <div class="slider-container">
-              <span class="slider-label">Оттенок</span>
+              <label for="hue-rotate" style="position: absolute; top: -20px;">Оттенок</label>
               <input type="range" min="0" max="360" value="0" step="1" id="hue-rotate">
+              <span class="value" id="hueRotateValue">0</span>
           </div>
           <div class="slider-container">
-              <span class="slider-label">Сепия</span>
+              <label for="sepia" style="position: absolute; top: -20px;">Сепия</label>
               <input type="range" min="0" max="1" value="0" step="0.1" id="sepia">
+              <span class="value" id="sepiaValue">0</span>
           </div>
           <div class="slider-container">
-              <span class="slider-label">Размытие</span>
+              <label for="blur" style="position: absolute; top: -20px;">Размытие</label>
               <input type="range" min="0" max="20" value="0" step="1" id="blur">
+              <span class="value" id="blurValue">0</span>
           </div>
           <div id="presetsContainer"></div>
-          <div class="reset-button">
-              <button id="resetFilterButton">Сбросить фильтр</button>
-          </div>
       </div>
     `;
     rightPanel.appendChild(filterSettings);
@@ -914,49 +914,97 @@ filterButton.addEventListener('click', () => {
               sepiaSlider.value = preset.sepia;
               blurSlider.value = preset.blur;
               updateFilter();
+             // Удалите класс active со всех кнопок
+            const buttons = presetsContainer.querySelectorAll('button');
+            buttons.forEach(button => button.classList.remove('active'));
+
+            // Добавьте класс active на нажатую кнопку
+            presetButton.classList.add('active');
           });
+
+          if (presetName === 'Normal') {
+            presetButton.classList.add('active');
+          }
+
           presetsContainer.appendChild(presetButton);
       }
   } else {
       console.error("Element with ID 'presetsContainer' not found.");
   }
 
-    saturationSlider = document.querySelector('#saturation');
-    contrastSlider = document.querySelector('#contrast');
-    brightnessSlider = document.querySelector('#brightness');
-    hueRotateSlider = document.querySelector('#hue-rotate');
-    sepiaSlider = document.querySelector('#sepia');
-    blurSlider = document.querySelector('#blur');
-    saturationSlider.addEventListener('input', updateFilter);
-    contrastSlider.addEventListener('input', updateFilter);
-    brightnessSlider.addEventListener('input', updateFilter);
-    hueRotateSlider.addEventListener('input', updateFilter);
-    sepiaSlider.addEventListener('input', updateFilter);
-    blurSlider.addEventListener('input', updateFilter);
 
-    const resetFilterButton = document.querySelector('#resetFilterButton');
-    resetFilterButton.addEventListener('click', resetFilter);
+    // Добавьте обработчики событий для ползунков настройки фильтра
+    saturationSlider = document.querySelector('#saturation');
+    const saturationValue = document.querySelector('#saturationValue');
+    saturationSlider.addEventListener('input', () => {
+        saturationValue.textContent = saturationSlider.value;
+        updateFilter();
+    });
+
+    contrastSlider = document.querySelector('#contrast');
+    const contrastValue = document.querySelector('#contrastValue');
+    contrastSlider.addEventListener('input', () => {
+        contrastValue.textContent = contrastSlider.value;
+        updateFilter();
+    });
+
+    brightnessSlider = document.querySelector('#brightness');
+    const brightnessValue = document.querySelector('#brightnessValue');
+    brightnessSlider.addEventListener('input', () => {
+        brightnessValue.textContent = brightnessSlider.value;
+        updateFilter();
+    });
+
+    hueRotateSlider = document.querySelector('#hue-rotate');
+    const hueRotateValue = document.querySelector('#hueRotateValue');
+    hueRotateSlider.addEventListener('input', () => {
+        hueRotateValue.textContent = hueRotateSlider.value;
+        updateFilter();
+    });
+
+    sepiaSlider = document.querySelector('#sepia');
+    const sepiaValue = document.querySelector('#sepiaValue');
+    sepiaSlider.addEventListener('input', () => {
+        sepiaValue.textContent = sepiaSlider.value;
+        updateFilter();
+    });
+
+    blurSlider = document.querySelector('#blur');
+    const blurValue = document.querySelector('#blurValue');
+    blurSlider.addEventListener('input', () => {
+        blurValue.textContent = blurSlider.value;
+        updateFilter();
+    });
+
 });
 
 function updateFilter() {
-    const saturation = saturationSlider.value;
-    const contrast = contrastSlider.value;
-    const brightness = brightnessSlider.value;
-    const hueRotate = hueRotateSlider.value;
-    const sepia = sepiaSlider.value;
-    const blur = blurSlider.value;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.filter = `saturate(${saturation}) contrast(${contrast}) brightness(${brightness}) hue-rotate(${hueRotate}deg) sepia(${sepia}) blur(${blur}px)`;
-    ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
+  const saturation = saturationSlider.value;
+  const contrast = contrastSlider.value;
+  const brightness = brightnessSlider.value;
+  const hueRotate = hueRotateSlider.value;
+  const sepia = sepiaSlider.value;
+  const blur = blurSlider.value;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.filter = `saturate(${saturation}) contrast(${contrast}) brightness(${brightness})
+                hue-rotate(${hueRotate}deg) sepia(${sepia}) blur(${blur}px)`;
+  ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
+
+  saturationValue.textContent = saturation;
+  contrastValue.textContent = contrast;
+  brightnessValue.textContent = brightness;
+  hueRotateValue.textContent = hueRotate;
+  sepiaValue.textContent = sepia;
+  blurValue.textContent = blur;
 }
 
 function resetFilter() {
-    saturationSlider.value = 1;
-    contrastSlider.value = 1;
-    brightnessSlider.value = 1;
-    hueRotateSlider.value = 0;
-    sepiaSlider.value = 0;
-    blurSlider.value = 0;
-    updateFilter();
+  saturationSlider.value = 1;
+  contrastSlider.value = 1;
+  brightnessSlider.value = 1;
+  hueRotateSlider.value = 0;
+  sepiaSlider.value = 0;
+  blurSlider.value = 0;
+  updateFilter();
 }
